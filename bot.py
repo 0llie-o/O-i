@@ -39,7 +39,6 @@ async def on_startup(bot: Bot) -> None:
         except Exception:
             logger.exception("Failed to set bot commands")
 
-        await bot.set_my_commands(BOT_COMMANDS)
         me = await bot.get_me()
         logger.warning(
             "✓ Bot @%s (id=%d) STARTED | max_tasks=%d start_from_latest=%s",
