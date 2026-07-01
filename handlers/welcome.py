@@ -1,44 +1,66 @@
+from aiogram import Router
+from aiogram.types import Message, User
+from aiogram.filters import Command
+from aiogram.fsm.context import FSMContext
+from config import WELCOME_ANIMATION_URL, BOT_NAME
+from handlers.states import WelcomeStates
+import db
 import logging
-from aiogram import Router, Bot
-from aiogram.types import ChatMemberUpdated
-from aiogram.filters.chat_member_updated import ChatMemberUpdatedFilter, JOIN_TRANSITION
-from database.pg_db import get_welcome_message, get_buttons, register_chat
-from keyboards.inline import build_welcome_keyboard
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 router = Router()
 
+async def format_welcome_text(template: str, user: User, chat_title: str | None = None) -> str:
+    """
+    يستبدل الـ placeholders {name} و {chat} بالنصّ المناسب.
+    """
+    name = user.full_name if user else "{name}"
+    chat = chat_title or "{chat}"
+    return template.replace("{name}", name).replace("{chat}", str(chat))
 
-def _render(template: str, full_name: str, chat_title: str) -> str:
-    return template.replace("{name}", full_name).replace("{chat}", chat_title)
+async def send_welcome(bot, chat_id: int, user: User, welcome_template: str | None = None, chat_title: str | None = None):
+    """
+    ترسل رسالة ترحيب كـ Animation (GIF) باستخدام WELCOME_ANIMATION_URL
+    ويكون النص كتعليق (caption) مع استبدال المتغيرات {name} و {chat}.
+    """
+    if not welcome_template:
+        # نص افتراضي - يمكنك تغييره أو جلبه من DB
+        welcome_template = (
+            "مرحبًا {name} في {chat}!\n\n"
+            f"يسرّني أن أرحب بكم — هذا بوت {BOT_NAME} هنا للمساعدة."
+        )
 
-
-@router.chat_member(ChatMemberUpdatedFilter(member_status_changed=JOIN_TRANSITION))
-async def on_new_member(event: ChatMemberUpdated, bot: Bot) -> None:
-    user = event.new_chat_member.user
-    if user.is_bot:
-        return
-
-    chat_id    = event.chat.id
-    chat_title = event.chat.title or "the group"
-
-    await register_chat(
-        chat_id=chat_id,
-        chat_type=event.chat.type,
-        title=event.chat.title,
-        username=event.chat.username,
-    )
-
-    welcome_text = await get_welcome_message(chat_id)
-    if not welcome_text:
-        return
-
-    buttons = await get_buttons(chat_id)
-    kb      = build_welcome_keyboard(buttons)
-    text    = _render(welcome_text, user.full_name, chat_title)
-
+    caption = await format_welcome_text(welcome_template, user, chat_title)
+    # إرسال ملف متحرك (Animation) مع التعليق
     try:
-        await bot.send_message(chat_id, text, reply_markup=kb, parse_mode="HTML")
-        logger.info("Welcomed user %d in chat %d", user.id, chat_id)
-    except Exception as exc:
-        logger.error("Failed to send welcome in chat %d: %s", chat_id, exc)
+        await bot.send_animation(chat_id=chat_id, animation=WELCOME_ANIMATION_URL, caption=caption)
+    except Exception:
+        log.exception("Failed to send welcome animation to chat_id=%s", chat_id)
+        # Fallback: إرسال نص بدون ميديا
+        try:
+            await bot.send_message(chat_id, caption)
+        except Exception:
+            log.exception("Failed to send fallback welcome message to chat_id=%s", chat_id)
+
+# ---- State handler: استقبال نص الترحيب من المستخدم ----
+@router.message(WelcomeStates.waiting_welcome)
+async def process_welcome_text(message: Message, state: FSMContext):
+    template = message.text.strip()
+    try:
+        ok = await db.set_welcome(message.chat.id, template)
+        if ok:
+            await message.answer("✅ تم حفظ نص الترحيب بنجاح.")
+        else:
+            await message.answer("⚠️ تعذّر حفظ نص الترحيب. تأكد من إعداد قاعدة البيانات ثم حاول مرة أخرى.")
+    except Exception:
+        await message.answer("⚠️ حدث خطأ أثناء حفظ نص الترحيب. حاول لاحقاً.")
+        log.exception("Error saving welcome template")
+    finally:
+        await state.clear()
+
+# أمثلة أوامر لاختبار المعاينة
+@router.message(Command("show_welcome"))
+async def cmd_show_welcome(message: Message):
+    user = message.from_user
+    template = await db.get_welcome(message.chat.id)
+    await send_welcome(message.bot, message.chat.id, user, welcome_template=template, chat_title=message.chat.title)
