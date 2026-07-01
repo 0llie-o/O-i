@@ -15,20 +15,9 @@ from handlers import start, admin, channels, welcome, callbacks, broadcast
 
 logger = logging.getLogger(__name__)
 
+# Official bot commands (simplified to a single Arabic /start command)
 BOT_COMMANDS = [
-    BotCommand(command="start",         description="Show main menu"),
-    BotCommand(command="set_welcome",   description="Set welcome message for this group"),
-    BotCommand(command="show_welcome",  description="Preview current welcome message"),
-    BotCommand(command="del_welcome",   description="Delete welcome message & buttons"),
-    BotCommand(command="add_button",    description="Add inline button (label | url)"),
-    BotCommand(command="del_button",    description="Remove button by ID"),
-    BotCommand(command="list_buttons",  description="List all configured buttons"),
-    BotCommand(command="add_channel",   description="Register a channel"),
-    BotCommand(command="del_channel",   description="Remove channel by ID"),
-    BotCommand(command="list_channels", description="List all registered channels"),
-    BotCommand(command="broadcast",     description="Broadcast message to all known chats"),
-    BotCommand(command="stats",         description="Show bot statistics"),
-    BotCommand(command="cancel",        description="Cancel current operation"),
+    BotCommand(command="start", description="فتح لوحة تحكم البوت لـ llie⚫"),
 ]
 
 
@@ -43,6 +32,13 @@ async def on_startup(bot: Bot) -> None:
     try:
         logger.info("Starting bot initialization...")
         await init_postgres()
+        # Set official bot commands (appears in Telegram's command menu)
+        try:
+            await bot.set_my_commands(BOT_COMMANDS)
+            logger.info("Bot commands set: %s", BOT_COMMANDS)
+        except Exception:
+            logger.exception("Failed to set bot commands")
+
         await bot.set_my_commands(BOT_COMMANDS)
         me = await bot.get_me()
         logger.warning(
