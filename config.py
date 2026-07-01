@@ -11,6 +11,10 @@ BOT_TOKEN = os.getenv("BOT_TOKEN", "REPLACE_WITH_YOUR_TOKEN")
 # DSN لقاعدة البيانات PostgreSQL (تعديل إلى إعداداتك الحقيقية):
 DB_DSN = os.getenv("DB_DSN", "postgresql://user:password@localhost:5432/dbname")
 
+# Provide compatibility variable DATABASE_URL used by database/pg_db.py
+# Tie DATABASE_URL to DB_DSN so both names work interchangeably
+DATABASE_URL = DB_DSN
+
 # أقصى تزامن (Concurrency) يُستخدم في بعض بيئات النشر أو تكوينات الخادم
 # يمكنك تعيينه عبر متغير البيئة MAX_CONCURRENCY، أو ترك القيمة الافتراضية 100
 try:
