@@ -10,3 +10,10 @@ BOT_TOKEN = os.getenv("BOT_TOKEN", "REPLACE_WITH_YOUR_TOKEN")
 
 # DSN لقاعدة البيانات PostgreSQL (تعديل إلى إعداداتك الحقيقية):
 DB_DSN = os.getenv("DB_DSN", "postgresql://user:password@localhost:5432/dbname")
+
+# أقصى تزامن (Concurrency) يُستخدم في بعض بيئات النشر أو تكوينات الخادم
+# يمكنك تعيينه عبر متغير البيئة MAX_CONCURRENCY، أو ترك القيمة الافتراضية 100
+try:
+    MAX_CONCURRENCY = int(os.getenv("MAX_CONCURRENCY", "100"))
+except Exception:
+    MAX_CONCURRENCY = 100
