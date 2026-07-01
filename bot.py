@@ -8,7 +8,8 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import BotCommand
 from aiogram.exceptions import TelegramConflictError
 
-from config import BOT_TOKEN, MAX_CONCURRENT_TASKS, START_FROM_LATEST
+from config import BOT_TOKEN
+import config
 from database.pg_db import init_postgres, close_pool
 from handlers import start, admin, channels, welcome, callbacks, broadcast
 
@@ -46,7 +47,7 @@ async def on_startup(bot: Bot) -> None:
         me = await bot.get_me()
         logger.warning(
             "✓ Bot @%s (id=%d) STARTED | max_tasks=%d start_from_latest=%s",
-            me.username, me.id, MAX_CONCURRENT_TASKS, START_FROM_LATEST,
+            me.username, me.id, config.MAX_CONCURRENT_TASKS, config.START_FROM_LATEST,
         )
     except Exception as exc:
         logger.critical("Failed to start bot: %s", exc)
@@ -86,7 +87,7 @@ async def main() -> None:
         await dp.start_polling(
             bot,
             allowed_updates=["message", "callback_query", "chat_member"],
-            drop_pending_updates=START_FROM_LATEST,
+            drop_pending_updates=config.START_FROM_LATEST,
         )
     except TelegramConflictError:
         logger.critical(

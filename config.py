@@ -17,3 +17,15 @@ try:
     MAX_CONCURRENCY = int(os.getenv("MAX_CONCURRENCY", "100"))
 except Exception:
     MAX_CONCURRENCY = 100
+
+# Compatibility variables expected by bot.py
+try:
+    MAX_CONCURRENT_TASKS = int(os.getenv("MAX_CONCURRENT_TASKS", str(MAX_CONCURRENCY)))
+except Exception:
+    MAX_CONCURRENT_TASKS = MAX_CONCURRENCY
+
+# START_FROM_LATEST determines whether to drop pending updates (True/False)
+START_FROM_LATEST = os.getenv("START_FROM_LATEST", "True").lower() in ("1", "true", "yes")
+
+# Backup default requested by user
+MAX_CONCURRENCY = MAX_CONCURRENCY
