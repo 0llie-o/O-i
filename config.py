@@ -2,6 +2,7 @@ import os
 
 # إعدادات عامة وبوت
 BOT_NAME = "llie⚫"
+# رابط الصورة المتحركة (GIF) المطلوب من المستخدم
 WELCOME_ANIMATION_URL = "https://postimg.cc"
 
 # استخدم متغير بيئي لرمز البوت بدل تضمينه هنا مباشرة
