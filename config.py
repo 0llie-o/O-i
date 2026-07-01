@@ -2,8 +2,8 @@ import os
 
 # إعدادات عامة وبوت
 BOT_NAME = "llie⚫"
-# رابط الصورة المتحركة (GIF) المطلوب من المستخدم
-WELCOME_ANIMATION_URL = "https://postimg.cc"
+# رابط الصورة المتحركة (GIF) المباشر للعمل مع Telegram
+WELCOME_ANIMATION_URL = "https://i.postimg.cc/YCJwm7xB/2ea81f452613dc740e19a5af784425ed-ezgif-com-resize.gif"
 
 # استخدم متغير بيئي لرمز البوت بدل تضمينه هنا مباشرة
 BOT_TOKEN = os.getenv("BOT_TOKEN", "REPLACE_WITH_YOUR_TOKEN")
