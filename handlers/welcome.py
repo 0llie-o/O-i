@@ -1,7 +1,10 @@
 from aiogram import Router
 from aiogram.types import Message, User
 from aiogram.filters import Command
+from aiogram.fsm.context import FSMContext
 from config import WELCOME_ANIMATION_URL, BOT_NAME
+from handlers.states import WelcomeStates
+import db
 
 router = Router()
 
@@ -29,8 +32,17 @@ async def send_welcome(bot, chat_id: int, user: User, welcome_template: str | No
     # إرسال ملف متحرك (Animation) مع التعليق
     await bot.send_animation(chat_id=chat_id, animation=WELCOME_ANIMATION_URL, caption=caption)
 
+# ---- State handler: استقبال نص الترحيب من المستخدم ----
+@router.message(WelcomeStates.waiting_welcome)
+async def process_welcome_text(message: Message, state: FSMContext):
+    template = message.text.strip()
+    await db.set_welcome(message.chat.id, template)
+    await message.answer("✅ تم حفظ نص الترحيب بنجاح.")
+    await state.clear()
+
 # أمثلة أوامر لاختبار المعاينة
 @router.message(Command("show_welcome"))
 async def cmd_show_welcome(message: Message):
     user = message.from_user
-    await send_welcome(message.bot, message.chat.id, user)
+    template = await db.get_welcome(message.chat.id)
+    await send_welcome(message.bot, message.chat.id, user, welcome_template=template, chat_title=message.chat.title)
