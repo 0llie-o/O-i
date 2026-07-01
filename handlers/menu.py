@@ -1,6 +1,6 @@
-from aiogram import Router
+from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery
-from aiogram.filters import Command, Text
+from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from keyboards.main import get_main_menu
 from config import BOT_NAME
@@ -29,7 +29,7 @@ async def cmd_menu(message: Message):
 
 
 # ---- التعامل مع نقرات الأزرار (callback_data) ----
-@router.callback_query(Text("set_welcome"))
+@router.callback_query(F.data == "set_welcome")
 async def cb_set_welcome(query: CallbackQuery, state: FSMContext):
     await query.answer()
     await query.message.answer(
@@ -41,7 +41,7 @@ async def cb_set_welcome(query: CallbackQuery, state: FSMContext):
     )
     await state.set_state(WelcomeStates.waiting_welcome)
 
-@router.callback_query(Text("show_welcome"))
+@router.callback_query(F.data == "show_welcome")
 async def cb_show_welcome(query: CallbackQuery):
     await query.answer()
     try:
@@ -57,7 +57,7 @@ async def cb_show_welcome(query: CallbackQuery):
         await query.message.answer("⚠️ حدث خطأ أثناء جلب معاينة الترحيب. يرجى المحاولة لاحقاً.")
         log.exception("Error in show_welcome callback")
 
-@router.callback_query(Text("del_welcome"))
+@router.callback_query(F.data == "del_welcome")
 async def cb_del_welcome(query: CallbackQuery, state: FSMContext):
     await query.answer()
     await query.message.answer(
@@ -66,7 +66,7 @@ async def cb_del_welcome(query: CallbackQuery, state: FSMContext):
     )
     await state.set_state(WelcomeStates.waiting_welcome)
 
-@router.callback_query(Text("add_button"))
+@router.callback_query(F.data == "add_button")
 async def cb_add_button(query: CallbackQuery, state: FSMContext):
     await query.answer()
     await query.message.answer(
@@ -76,13 +76,13 @@ async def cb_add_button(query: CallbackQuery, state: FSMContext):
     )
     await state.set_state(ButtonStates.waiting_add_button)
 
-@router.callback_query(Text("del_button"))
+@router.callback_query(F.data == "del_button")
 async def cb_del_button(query: CallbackQuery, state: FSMContext):
     await query.answer()
-    await query.message.answer("❌ لحذف زر: أرسل رقم المعرف (id) أ�� نص الزر لحذفه.")
+    await query.message.answer("❌ لحذف زر: أرسل رقم المعرف (id) أو نص الزر لحذفه.")
     await state.set_state(ButtonStates.waiting_del_button)
 
-@router.callback_query(Text("list_buttons"))
+@router.callback_query(F.data == "list_buttons")
 async def cb_list_buttons(query: CallbackQuery):
     await query.answer()
     try:
@@ -98,19 +98,19 @@ async def cb_list_buttons(query: CallbackQuery):
         await query.message.answer("⚠️ حدث خطأ أثناء جلب قائمة الأزرار.")
         log.exception("Error in list_buttons callback")
 
-@router.callback_query(Text("add_channel"))
+@router.callback_query(F.data == "add_channel")
 async def cb_add_channel(query: CallbackQuery, state: FSMContext):
     await query.answer()
     await query.message.answer("📢 لإضافة قناة: أرسل معرف القناة أو الرابط.\nمثال: @mychannel")
     await state.set_state(ChannelStates.waiting_add_channel)
 
-@router.callback_query(Text("del_channel"))
+@router.callback_query(F.data == "del_channel")
 async def cb_del_channel(query: CallbackQuery, state: FSMContext):
     await query.answer()
     await query.message.answer("➖ لإزالة قناة: أرسل معرف القناة المراد إزالتها من القائمة.")
     await state.set_state(ChannelStates.waiting_del_channel)
 
-@router.callback_query(Text("list_channels"))
+@router.callback_query(F.data == "list_channels")
 async def cb_list_channels(query: CallbackQuery):
     await query.answer()
     try:
@@ -126,7 +126,7 @@ async def cb_list_channels(query: CallbackQuery):
         await query.message.answer("⚠️ حدث خطأ أثناء جلب قائمة القنوات.")
         log.exception("Error in list_channels callback")
 
-@router.callback_query(Text("broadcast"))
+@router.callback_query(F.data == "broadcast")
 async def cb_broadcast(query: CallbackQuery, state: FSMContext):
     await query.answer()
     await query.message.answer(
@@ -135,7 +135,7 @@ async def cb_broadcast(query: CallbackQuery, state: FSMContext):
     )
     await state.set_state(BroadcastStates.waiting_broadcast)
 
-@router.callback_query(Text("stats"))
+@router.callback_query(F.data == "stats")
 async def cb_stats(query: CallbackQuery):
     await query.answer()
     try:
